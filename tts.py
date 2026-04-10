@@ -4,45 +4,93 @@ import os
 import tempfile
 from config import TTS_ENGINE, EDGE_VOICES, DEFAULT_VOICE, ELEVENLABS_API_KEY
 
-
 async def speak(text: str, voice_key: str = None, big_gift: bool = False) -> bytes:
     """
     Chuyển văn bản thành giọng nói. Trả về bytes audio (mp3).
-    - voice_key: key trong EDGE_VOICES, None = dùng mặc định hoặc random
-    - big_gift: True → dùng giọng đặc biệt cho quà lớn
+    Thứ tự ưu tiên: ElevenLabs → gTTS → Edge TTS
     """
     if voice_key is None:
-        # Quà lớn → random giọng để tạo hiệu ứng bất ngờ
         voice_key = random.choice(list(EDGE_VOICES.keys())) if big_gift else DEFAULT_VOICE
 
     engine = TTS_ENGINE.lower()
 
-    if engine == "edge":
-        return await _edge_tts(text, voice_key)
-    elif engine == "elevenlabs":
+    if engine == "elevenlabs":
         return await _elevenlabs_tts(text)
     elif engine == "google":
         return await _google_tts(text)
+    elif engine == "gtts":
+        return await _gtts(text)
     else:
+        # Mặc định: thử gTTS trước (ổn định hơn trên server), fallback Edge TTS
+        result = await _gtts(text)
+        if result:
+            return result
         return await _edge_tts(text, voice_key)
+
+
+async def _gtts(text: str) -> bytes:
+    """gTTS - dùng HTTP thông thường, hoạt động tốt trên server/Railway."""
+    try:
+        from gtts import gTTS
+        import io
+        # Chạy trong thread pool để không block event loop
+        loop = asyncio.get_event_loop()
+        def _gen():
+            tts = gTTS(text=text, lang='vi', slow=False)
+            buf = io.BytesIO()
+            tts.write_to_fp(buf)
+            return buf.getvalue()
+        audio_bytes = await loop.run_in_executor(None, _gen)
+        return audio_bytes
+    except ImportError:
+        print("[TTS] Chưa cài gTTS. Chạy: pip install gTTS")
+        return b""
+    except Exception as e:
+        print(f"[gTTS] Lỗi: {e}")
+        return b""
 
 
 async def _edge_tts(text: str, voice_key: str) -> bytes:
     """Edge TTS - miễn phí, không cần API key, hỗ trợ tiếng Việt tốt."""
     try:
         import edge_tts
+        import re
+
+        # Chỉ bỏ emoji, giữ nguyên tiếng Việt
+        import unicodedata
+        clean = ''.join(
+            c for c in text
+            if unicodedata.category(c) not in ('So', 'Sm', 'Sk', 'Sc')
+            and ord(c) < 0x1F600 or ord(c) > 0x1F9FF
+        ).strip()
+        clean = re.sub(r'\s+', ' ', clean).strip()
+        if len(clean) < 3:
+            clean = "Xin chào các bạn"
+
+        print(f"[Edge TTS] Clean: '{clean[:80]}'")
         voice = EDGE_VOICES.get(voice_key, EDGE_VOICES[DEFAULT_VOICE])
-        communicate = edge_tts.Communicate(text, voice)
-        audio_bytes = b""
-        async for chunk in communicate.stream():
-            if chunk["type"] == "audio":
-                audio_bytes += chunk["data"]
-        return audio_bytes
+        print(f"[Edge TTS] Voice: {voice}")
+
+        # Thử tối đa 3 lần
+        for attempt in range(3):
+            try:
+                communicate = edge_tts.Communicate(clean, voice)
+                audio_bytes = b""
+                async for chunk in communicate.stream():
+                    if chunk["type"] == "audio":
+                        audio_bytes += chunk["data"]
+                if audio_bytes:
+                    return audio_bytes
+                print(f"[Edge TTS] Lần {attempt+1}: không nhận được audio, thử lại...")
+                await asyncio.sleep(1)
+            except Exception as e:
+                print(f"[Edge TTS] Lần {attempt+1} lỗi: {e}")
+                await asyncio.sleep(1)
+
+        print("[Edge TTS] Thất bại sau 3 lần thử")
+        return b""
     except ImportError:
         print("[TTS] Chưa cài edge-tts. Chạy: pip install edge-tts")
-        return b""
-    except Exception as e:
-        print(f"[Edge TTS] Lỗi: {e}")
         return b""
 
 
