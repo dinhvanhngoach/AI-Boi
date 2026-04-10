@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Bói Nốt Ruồi 🔮</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --p1:#7c3aed;--p2:#a855f7;--p3:#ec4899;
+  --gold:#fbbf24;--dark:#09010f;--dark2:#110520;
+  --text:#f5f0ff;--muted:rgba(245,240,255,.6);
+}
+
+html,body{
+  width:100vw;height:100vh;
+  overflow:hidden;
+  background:transparent;
+  font-family:'Be Vietnam Pro','Segoe UI',system-ui,sans-serif;
+  color:var(--text);
+}
+
+/* ── LAYOUT FULL MÀN HÌNH ── */
+#app{
+  width:100vw;height:100vh;
+  display:grid;
+  grid-template-columns:1fr 420px;
+  grid-template-rows:1fr;
+  gap:0;
+  position:relative;
+}
+
+/* ── PHẦN TRÁI: ẢNH KHUÔN MẶT ── */
+#face-side{
+  position:relative;
+  overflow:hidden;
+}
+
+#face-bg{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,#09010f 0%,#1a0535 50%,#09010f 100%);
+}
+
+/* Orb glow phía sau ảnh */
+#face-bg::before{
+  content:'';position:absolute;
+  width:70%;height:70%;
+  top:15%;left:15%;
+  background:radial-gradient(ellipse,rgba(124,58,237,.3) 0%,transparent 70%);
+  border-radius:50%;
+  animation:breathe 5s ease-in-out infinite;
+}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.1);opacity:1}}
+
+#face-img{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:contain;
+  object-position:center;
+  z-index:1;
+}
+
+/* Gradient overlay trái → phải để blend với panel phải */
+#face-side::after{
+  content:'';position:absolute;
+  top:0;right:0;bottom:0;width:120px;
+  background:linear-gradient(to right,transparent,rgba(17,5,32,.95));
+  z-index:2;pointer-events:none;
+}
+
+/* ── 78 NỐT RUỒI ── */
+.md{
+  position:absolute;z-index:3;
+  width:22px;height:22px;
+  background:rgba(251,191,36,.88);
+  border:1.5px solid rgba(255,255,255,.7);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:7.5px;font-weight:800;color:#1a0030;
+  transform:translate(-50%,-50%);
+  transition:all .4s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 1px 6px rgba(0,0,0,.5);
+  user-select:none;cursor:default;
+}
+.md.active{
+  background:var(--p3);color:#fff;border-color:#fff;
+  transform:translate(-50%,-50%) scale(2);
+  box-shadow:0 0 0 6px rgba(236,72,153,.2),0 0 28px rgba(236,72,153,.8);
+  z-index:10;
+}
+
+/* ── PHẦN PHẢI: PANEL KẾT QUẢ ── */
+#panel{
+  background:rgba(17,5,32,.95);
+  border-left:1px solid rgba(124,58,237,.2);
+  display:flex;flex-direction:column;
+  padding:24px 20px;
+  gap:16px;
+  position:relative;
+  z-index:5;
+  backdrop-filter:blur(20px);
+}
+
+/* Shimmer nền panel */
+#panel::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,.12) 0%,transparent 60%);
+  pointer-events:none;
+}
+
+/* ── HEADER PANEL ── */
+#panel-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-bottom:14px;
+  border-bottom:1px solid rgba(124,58,237,.2);
+  position:relative;z-index:1;
+}
+#brand{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:800;
+  color:rgba(245,240,255,.8);letter-spacing:.5px;
+}
+#brand span{font-size:18px}
+#live-pill{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(236,72,153,.15);
+  border:1px solid rgba(236,72,153,.3);
+  border-radius:20px;padding:4px 10px;
+  font-size:10px;font-weight:700;color:#f9a8d4;
+  letter-spacing:.5px;text-transform:uppercase;
+}
+#live-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#ec4899;box-shadow:0 0 6px #ec4899;
+  animation:pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+/* ── CARD SỰ KIỆN ── */
+#event-card{
+  background:linear-gradient(145deg,rgba(20,5,50,.9),rgba(40,10,75,.85));
+  border:1px solid rgba(124,58,237,.25);
+  border-radius:18px;padding:18px;
+  position:relative;overflow:hidden;
+  opacity:0;transform:translateY(12px);
+  transition:opacity .45s ease,transform .45s ease;
+  flex:1;display:flex;flex-direction:column;gap:12px;
+  z-index:1;
+}
+#event-card::before{
+  content:'';position:absolute;
+  top:-30%;left:-20%;width:140%;height:140%;
+  background:radial-gradient(ellipse at 60% 30%,rgba(124,58,237,.08) 0%,transparent 60%);
+  pointer-events:none;
+}
+#event-card.show{opacity:1;transform:translateY(0)}
+
+/* Badge */
+#badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  padding:4px 12px;border-radius:20px;width:fit-content;
+  background:rgba(251,191,36,.12);color:var(--gold);
+  border:1px solid rgba(251,191,36,.28);
+  transition:all .3s;
+}
+#badge.gift{background:rgba(236,72,153,.13);color:#f9a8d4;border-color:rgba(236,72,153,.3)}
+#badge.join{background:rgba(34,197,94,.1);color:#86efac;border-color:rgba(34,197,94,.25)}
+#badge.idle{background:rgba(148,163,184,.1);color:#cbd5e1;border-color:rgba(148,163,184,.2)}
+
+/* User row */
+#user-row{display:flex;align-items:center;gap:12px}
+#ava{
+  width:46px;height:46px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--p1),var(--p3));
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+  box-shadow:0 4px 16px rgba(124,58,237,.4);
+}
+#uname{
+  font-size:17px;font-weight:800;color:#e9d5ff;
+  text-shadow:0 0 16px rgba(168,85,247,.4);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#mnum{font-size:11px;font-weight:600;color:var(--gold);margin-top:2px;opacity:.9}
+
+/* Divider */
+#divider{height:1px;background:linear-gradient(90deg,transparent,rgba(124,58,237,.4),transparent)}
+
+/* Nội dung bói */
+#pred{
+  font-size:14px;line-height:1.75;color:#f0e6ff;
+  text-shadow:0 1px 4px rgba(0,0,0,.5);
+  flex:1;
+}
+#pred.typing::after{content:'▋';color:#c084fc;animation:blink .65s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── HINT BAR ── */
+#hint{
+  font-size:10.5px;color:rgba(200,170,255,.35);
+  text-align:center;letter-spacing:.3px;
+  position:relative;z-index:1;
+  padding-top:8px;
+  border-top:1px solid rgba(124,58,237,.1);
+}
+
+/* ── SPARKLE ── */
+#sparkle-overlay{position:fixed;inset:0;pointer-events:none;z-index:999}
+.sparkle{position:absolute;font-size:22px;animation:fall 2s ease-out forwards}
+@keyframes fall{0%{opacity:1;transform:translateY(0) rotate(0deg) scale(1)}100%{opacity:0;transform:translateY(180px) rotate(360deg) scale(.3)}}
+
+/* ── AUDIO UNLOCK ── */
+#unlock{
+  position:fixed;inset:0;
+  background:rgba(9,1,15,.95);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  z-index:9999;gap:16px;
+}
+#unlock button{
+  background:linear-gradient(135deg,var(--p1),var(--p3));
+  color:#fff;border:none;
+  padding:16px 40px;border-radius:50px;
+  font-size:16px;font-weight:700;cursor:pointer;
+  font-family:inherit;
+  box-shadow:0 8px 30px rgba(124,58,237,.5);
+  transition:transform .2s;
+}
+#unlock button:hover{transform:translateY(-2px)}
+#unlock p{color:rgba(200,170,255,.5);font-size:12px}
+#unlock.hidden{display:none}
+
+/* ── STATUS ── */
+#status{
+  position:fixed;bottom:8px;right:10px;
+  font-size:10px;color:rgba(255,255,255,.2);
+  display:flex;align-items:center;gap:4px;z-index:10;
+}
+#sdot{width:6px;height:6px;border-radius:50%;background:#ff4444}
+#sdot.on{background:#44ff88}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- PHẦN TRÁI: ẢNH KHUÔN MẶT -->
+  <div id="face-side">
+    <div id="face-bg"></div>
+    <img id="face-img" src="/static/face.jpg" alt="Bản đồ nốt ruồi"
+      onerror="this.style.display='none'"/>
+
+    <!-- 78 nốt ruồi -->
+    <div class="md" style="left:50%;top:10%" data-num="1">1</div>
+    <div class="md" style="left:58%;top:9%" data-num="2">2</div>
+    <div class="md" style="left:42%;top:9%" data-num="3">3</div>
+    <div class="md" style="left:64%;top:8%" data-num="4">4</div>
+    <div class="md" style="left:36%;top:8%" data-num="5">5</div>
+    <div class="md" style="left:70%;top:8%" data-num="6">6</div>
+    <div class="md" style="left:30%;top:8%" data-num="7">7</div>
+    <div class="md" style="left:76%;top:8%" data-num="8">8</div>
+    <div class="md" style="left:24%;top:8%" data-num="9">9</div>
+    <div class="md" style="left:82%;top:8%" data-num="10">10</div>
+    <div class="md" style="left:18%;top:8%" data-num="11">11</div>
+    <div class="md" style="left:12%;top:9%" data-num="12">12</div>
+    <div class="md" style="left:38%;top:30%" data-num="13">13</div>
+    <div class="md" style="left:32%;top:26%" data-num="14">14</div>
+    <div class="md" style="left:62%;top:26%" data-num="15">15</div>
+    <div class="md" style="left:34%;top:28%" data-num="16">16</div>
+    <div class="md" style="left:60%;top:28%" data-num="17">17</div>
+    <div class="md" style="left:36%;top:27%" data-num="18">18</div>
+    <div class="md" style="left:64%;top:28%" data-num="19">19</div>
+    <div class="md" style="left:34%;top:32%" data-num="20">20</div>
+    <div class="md" style="left:66%;top:32%" data-num="21">21</div>
+    <div class="md" style="left:36%;top:33%" data-num="22">22</div>
+    <div class="md" style="left:26%;top:27%" data-num="23">23</div>
+    <div class="md" style="left:24%;top:33%" data-num="24">24</div>
+    <div class="md" style="left:62%;top:33%" data-num="25">25</div>
+    <div class="md" style="left:38%;top:34%" data-num="26">26</div>
+    <div class="md" style="left:64%;top:34%" data-num="27">27</div>
+    <div class="md" style="left:32%;top:38%" data-num="28">28</div>
+    <div class="md" style="left:66%;top:36%" data-num="29">29</div>
+    <div class="md" style="left:34%;top:40%" data-num="30">30</div>
+    <div class="md" style="left:68%;top:36%" data-num="31">31</div>
+    <div class="md" style="left:30%;top:36%" data-num="32">32</div>
+    <div class="md" style="left:74%;top:34%" data-num="33">33</div>
+    <div class="md" style="left:72%;top:50%" data-num="34">34</div>
+    <div class="md" style="left:16%;top:52%" data-num="35">35</div>
+    <div class="md" style="left:24%;top:50%" data-num="36">36</div>
+    <div class="md" style="left:28%;top:54%" data-num="37">37</div>
+    <div class="md" style="left:38%;top:74%" data-num="38">38</div>
+    <div class="md" style="left:46%;top:76%" data-num="39">39</div>
+    <div class="md" style="left:54%;top:76%" data-num="40">40</div>
+    <div class="md" style="left:60%;top:74%" data-num="41">41</div>
+    <div class="md" style="left:64%;top:74%" data-num="42">42</div>
+    <div class="md" style="left:68%;top:74%" data-num="43">43</div>
+    <div class="md" style="left:72%;top:74%" data-num="44">44</div>
+    <div class="md" style="left:20%;top:88%" data-num="45">45</div>
+    <div class="md" style="left:56%;top:88%" data-num="46">46</div>
+    <div class="md" style="left:50%;top:18%" data-num="47">47</div>
+    <div class="md" style="left:50%;top:22%" data-num="48">48</div>
+    <div class="md" style="left:50%;top:42%" data-num="49">49</div>
+    <div class="md" style="left:50%;top:48%" data-num="50">50</div>
+    <div class="md" style="left:50%;top:52%" data-num="51">51</div>
+    <div class="md" style="left:44%;top:50%" data-num="52">52</div>
+    <div class="md" style="left:56%;top:50%" data-num="53">53</div>
+    <div class="md" style="left:50%;top:56%" data-num="54">54</div>
+    <div class="md" style="left:50%;top:82%" data-num="55">55</div>
+    <div class="md" style="left:50%;top:88%" data-num="56">56</div>
+    <div class="md" style="left:64%;top:82%" data-num="57">57</div>
+    <div class="md" style="left:28%;top:82%" data-num="58">58</div>
+    <div class="md" style="left:80%;top:52%" data-num="59">59</div>
+    <div class="md" style="left:78%;top:30%" data-num="60">60</div>
+    <div class="md" style="left:16%;top:31%" data-num="61">61</div>
+    <div class="md" style="left:18%;top:40%" data-num="62">62</div>
+    <div class="md" style="left:76%;top:42%" data-num="63">63</div>
+    <div class="md" style="left:40%;top:26%" data-num="64">64</div>
+    <div class="md" style="left:22%;top:28%" data-num="65">65</div>
+    <div class="md" style="left:30%;top:22%" data-num="66">66</div>
+    <div class="md" style="left:52%;top:26%" data-num="67">67</div>
+    <div class="md" style="left:78%;top:24%" data-num="68">68</div>
+    <div class="md" style="left:64%;top:22%" data-num="69">69</div>
+    <div class="md" style="left:50%;top:62%" data-num="70">70</div>
+    <div class="md" style="left:94%;top:28%" data-num="71">71</div>
+    <div class="md" style="left:94%;top:42%" data-num="72">72</div>
+    <div class="md" style="left:6%;top:28%"  data-num="73">73</div>
+    <div class="md" style="left:6%;top:42%"  data-num="74">74</div>
+    <div class="md" style="left:50%;top:66%" data-num="75">75</div>
+    <div class="md" style="left:50%;top:70%" data-num="76">76</div>
+    <div class="md" style="left:38%;top:64%" data-num="77">77</div>
+    <div class="md" style="left:62%;top:64%" data-num="78">78</div>
+  </div>
+
+  <!-- PHẦN PHẢI: PANEL KẾT QUẢ -->
+  <div id="panel">
+    <div id="panel-header">
+      <div id="brand"><span>🔮</span> Bói Nốt Ruồi AI</div>
+      <div id="live-pill"><span id="live-dot"></span> LIVE</div>
+    </div>
+
+    <div id="event-card">
+      <div id="badge">🔮 Bói Nốt Ruồi</div>
+      <div id="user-row">
+        <div id="ava">🔮</div>
+        <div>
+          <div id="uname">Đang chờ người bói...</div>
+          <div id="mnum"></div>
+        </div>
+      </div>
+      <div id="divider"></div>
+      <div id="pred">Comment "bói số 1 – 78" để xem vận mệnh ✨</div>
+    </div>
+
+    <div id="hint">💬 Comment · bói số 1 → 78 · để khám phá vận mệnh</div>
+  </div>
+</div>
+
+<div id="sparkle-overlay"></div>
+
+<div id="unlock">
+  <span style="font-size:60px">🔮</span>
+  <button onclick="unlockAudio()">🔊 Bấm để bật âm thanh</button>
+  <p>Trình duyệt yêu cầu bấm một lần để kích hoạt audio</p>
+</div>
+
+<div id="status">
+  <span id="sdot"></span>
+  <span id="stxt">Đang kết nối...</span>
+</div>
+
+<script>
+const ws = new WebSocket(`ws://${location.host}/ws`);
+
+const card   = document.getElementById('event-card');
+const badge  = document.getElementById('badge');
+const ava    = document.getElementById('ava');
+const uname  = document.getElementById('uname');
+const mnum   = document.getElementById('mnum');
+const pred   = document.getElementById('pred');
+const sdot   = document.getElementById('sdot');
+const stxt   = document.getElementById('stxt');
+const unlock = document.getElementById('unlock');
+
+let audioCtx = null, audioUnlocked = false, twTimer = null;
+
+const BADGE_MAP  = {comment:'🔮 Đang Bói',gift:'🎁 Tặng Quà',join:'👋 Vừa Vào',idle:'✨ Thông Báo'};
+const AVA_MAP    = {comment:'🔮',gift:'🎁',join:'👋',idle:'✨'};
+
+function unlockAudio() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  audioUnlocked = true;
+  unlock.classList.add('hidden');
+}
+
+ws.onopen  = () => { sdot.classList.add('on'); stxt.textContent = 'Đã kết nối'; };
+ws.onclose = () => { sdot.classList.remove('on'); stxt.textContent = 'Mất kết nối...'; setTimeout(() => location.reload(), 3000); };
+
+ws.onmessage = async (e) => {
+  const d = JSON.parse(e.data);
+  if (d.type === 'init') return;
+  render(d);
+  if (d.audio_b64 && audioUnlocked) await playAudio(d.audio_b64);
+  if (d.is_big_gift) sparkles();
+};
+
+function render(d) {
+  badge.textContent = BADGE_MAP[d.type] || '🔮 Bói Nốt Ruồi';
+  badge.className   = ['gift','join','idle'].includes(d.type) ? d.type : '';
+  ava.textContent   = AVA_MAP[d.type] || '🔮';
+  uname.textContent = d.username ? `@${d.username}` : 'Đang chờ người bói...';
+
+  if (d.mole_number) {
+    mnum.textContent = `✦ Nốt ruồi số ${d.mole_number}`;
+    highlight(d.mole_number);
+  } else {
+    mnum.textContent = '';
+    clearHL();
+  }
+
+  typewrite(pred, d.prediction || '');
+  card.classList.remove('show');
+  requestAnimationFrame(() => requestAnimationFrame(() => card.classList.add('show')));
+}
+
+function highlight(n) {
+  clearHL();
+  const el = document.querySelector(`.md[data-num="${n}"]`);
+  if (el) el.classList.add('active');
+}
+function clearHL() {
+  document.querySelectorAll('.md.active').forEach(e => e.classList.remove('active'));
+}
+
+function typewrite(el, text) {
+  if (twTimer) clearInterval(twTimer);
+  el.classList.add('typing'); el.textContent = ''; let i = 0;
+  twTimer = setInterval(() => {
+    if (i < text.length) { el.textContent += text[i++]; }
+    else { el.classList.remove('typing'); clearInterval(twTimer); twTimer = null; }
+  }, 25);
+}
+
+async function playAudio(b64) {
+  try {
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    const bin = atob(b64), buf = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+    const ab = await audioCtx.decodeAudioData(buf.buffer);
+    const src = audioCtx.createBufferSource();
+    src.buffer = ab; src.connect(audioCtx.destination); src.start(0);
+  } catch(e) { console.warn('[Audio]', e); }
+}
+
+function sparkles() {
+  const ov = document.getElementById('sparkle-overlay');
+  const em = ['✨','🎉','💖','🌟','💎','🎊','🔮','💫','⭐'];
+  for (let i = 0; i < 30; i++) setTimeout(() => {
+    const el = document.createElement('div');
+    el.className = 'sparkle';
+    el.textContent = em[Math.floor(Math.random() * em.length)];
+    el.style.left = Math.random() * 100 + '%';
+    el.style.top  = Math.random() * 60  + '%';
+    ov.appendChild(el);
+    setTimeout(() => el.remove(), 2100);
+  }, i * 75);
+}
+</script>
+</body>
+</html>
