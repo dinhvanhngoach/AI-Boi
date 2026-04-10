@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>🔮 Admin – Bói Nốt Ruồi AI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f0ebff;--bg2:#e8e0ff;--card:#fff;
+  --p:#7c3aed;--p2:#a855f7;--p3:#ec4899;
+  --green:#16a34a;--red:#dc2626;--gold:#d97706;
+  --text:#1e1030;--muted:#6b5b8a;--border:rgba(124,58,237,.15);
+}
+body{background:var(--bg);color:var(--text);font-family:'Be Vietnam Pro','Segoe UI',system-ui,sans-serif;font-size:14px;min-height:100vh}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--p);color:#fff;padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(124,58,237,.3)}
+.topbar-brand{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
+.topbar-right{display:flex;align-items:center;gap:12px;font-size:13px}
+#conn-status{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);padding:5px 12px;border-radius:20px}
+#conn-dot{width:8px;height:8px;border-radius:50%;background:#fbbf24}
+#conn-dot.live{background:#4ade80;box-shadow:0 0 8px #4ade80}
+#conn-dot.ws{background:#60a5fa}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px 24px;max-width:1200px;margin:0 auto}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+
+/* ── CARD ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(124,58,237,.06)}
+.card-title{font-size:13px;font-weight:700;color:var(--p);margin-bottom:16px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ── FORM ELEMENTS ── */
+label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px}
+input[type=text],input[type=number]{
+  width:100%;background:var(--bg);border:1px solid var(--border);
+  border-radius:8px;padding:10px 14px;font-size:14px;color:var(--text);
+  font-family:inherit;outline:none;transition:border-color .2s;
+}
+input:focus{border-color:var(--p)}
+.form-row{margin-bottom:14px}
+.form-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .2s;width:100%}
+.btn-primary{background:var(--p);color:#fff;box-shadow:0 3px 12px rgba(124,58,237,.3)}
+.btn-primary:hover{background:#6d28d9;transform:translateY(-1px)}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{background:#15803d}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:#b91c1c}
+.btn-outline{background:transparent;color:var(--p);border:1.5px solid var(--border)}
+.btn-outline:hover{background:rgba(124,58,237,.06)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ── STATUS BADGE ── */
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px}
+.badge-green{background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.25)}
+.badge-red{background:rgba(220,38,38,.1);color:var(--red);border:1px solid rgba(220,38,38,.2)}
+.badge-yellow{background:rgba(217,119,6,.1);color:var(--gold);border:1px solid rgba(217,119,6,.2)}
+.badge-purple{background:rgba(124,58,237,.1);color:var(--p);border:1px solid var(--border)}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat-box{background:var(--bg);border-radius:10px;padding:12px;text-align:center}
+.stat-num{font-size:22px;font-weight:800;color:var(--p)}
+.stat-label{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── QUEUE LIST ── */
+#queue-list{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto}
+.queue-item{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:8px;padding:10px 12px;font-size:13px}
+.queue-item .qi-num{width:28px;height:28px;border-radius:50%;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.queue-item .qi-name{font-weight:600;color:var(--text)}
+.queue-item .qi-type{margin-left:auto}
+.empty-state{text-align:center;color:var(--muted);padding:20px;font-size:13px}
+
+/* ── HISTORY ── */
+#history-list{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto}
+.hist-item{background:var(--bg);border-radius:8px;padding:10px 12px;border-left:3px solid var(--border)}
+.hist-item.comment{border-left-color:var(--p)}
+.hist-item.gift{border-left-color:#f59e0b}
+.hist-item.join{border-left-color:var(--green)}
+.hist-meta{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.hist-user{font-weight:700;font-size:13px}
+.hist-time{font-size:11px;color:var(--muted);margin-left:auto}
+.hist-text{font-size:12px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ── QUICK NUMS ── */
+.quick-nums{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.qn{width:34px;height:34px;border-radius:50%;background:var(--bg);border:1px solid var(--border);color:var(--p);font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.qn:hover{background:var(--p);color:#fff;border-color:var(--p)}
+
+/* ── DIVIDER ── */
+hr{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;right:24px;background:#1e1030;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transform:translateY(10px);transition:all .3s;z-index:999;pointer-events:none}
+#toast.show{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">🔮 Bói Nốt Ruồi AI — Admin Panel</div>
+  <div class="topbar-right">
+    <div id="conn-status">
+      <span id="conn-dot"></span>
+      <span id="conn-text">Đang kết nối...</span>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- CỘT TRÁI -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <!-- STATS -->
+    <div class="card">
+      <div class="card-title">📊 Thống kê live</div>
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-num" id="s-comments">0</div><div class="stat-label">Comments</div></div>
+        <div class="stat-box"><div class="stat-num" id="s-gifts">0</div><div class="stat-label">Quà tặng</div></div>
+        <div class="stat-box"><div class="stat-num" id="s-joins">0</div><div class="stat-label">Vào live</div></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <div style="flex:1;background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:var(--muted)">Queue</div>
+          <div style="font-weight:700;color:var(--p)" id="s-queue">0</div>
+        </div>
+        <div style="flex:1;background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:var(--muted)">WS Clients</div>
+          <div style="font-weight:700;color:var(--p)" id="s-ws">0</div>
+        </div>
+        <div style="flex:1;background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:var(--muted)">Trạng thái</div>
+          <div id="s-status" style="font-weight:700;font-size:11px;color:var(--green)">Online</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEST BÓI -->
+    <div class="card">
+      <div class="card-title">🧪 Test bói thủ công</div>
+      <div class="form-2col">
+        <div class="form-row">
+          <label>Tên người xem</label>
+          <input type="text" id="test-name" placeholder="Ví dụ: Nguyễn Văn A" value="TestUser"/>
+        </div>
+        <div class="form-row">
+          <label>Số nốt ruồi (1–78)</label>
+          <input type="number" id="test-num" placeholder="1–78" min="1" max="78" value="1"/>
+        </div>
+      </div>
+      <div class="quick-nums" id="quick-nums"></div>
+      <hr/>
+      <button class="btn btn-primary" onclick="testBoi()">🔮 Bói ngay</button>
+    </div>
+
+    <!-- TEST SỰ KIỆN KHÁC -->
+    <div class="card">
+      <div class="card-title">⚡ Test sự kiện</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-outline" onclick="testJoin()">👋 Test người vào live</button>
+        <button class="btn btn-outline" onclick="testGift(false)">🎁 Test quà thường</button>
+        <button class="btn btn-outline" onclick="testGift(true)">💎 Test quà lớn (≥100 diamond)</button>
+        <button class="btn btn-outline" onclick="testIdle()">✨ Test câu idle</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CỘT PHẢI -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <!-- TRẠNG THÁI HIỆN TẠI -->
+    <div class="card">
+      <div class="card-title">🎯 Đang hiển thị</div>
+      <div id="current-display" style="background:var(--bg);border-radius:10px;padding:14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div id="cur-ava" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#ec4899);display:flex;align-items:center;justify-content:center;font-size:18px">🔮</div>
+          <div>
+            <div id="cur-user" style="font-weight:700;font-size:14px">Đang chờ...</div>
+            <div id="cur-mole" style="font-size:11px;color:var(--gold)"></div>
+          </div>
+          <div id="cur-badge" class="badge badge-purple" style="margin-left:auto">Idle</div>
+        </div>
+        <div id="cur-pred" style="font-size:13px;color:var(--muted);line-height:1.6">Chưa có sự kiện nào</div>
+      </div>
+    </div>
+
+    <!-- HÀNG ĐỢI -->
+    <div class="card">
+      <div class="card-title">⏳ Hàng đợi <span id="queue-count" class="badge badge-purple" style="margin-left:4px">0</span></div>
+      <div id="queue-list"><div class="empty-state">Hàng đợi trống</div></div>
+    </div>
+
+    <!-- LỊCH SỬ -->
+    <div class="card">
+      <div class="card-title">📋 Lịch sử (50 gần nhất)</div>
+      <div id="history-list"><div class="empty-state">Chưa có sự kiện nào</div></div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const ws = new WebSocket(`ws://${location.host}/ws`);
+const history = [];
+const MAX_HIST = 50;
+
+// ── WebSocket ──────────────────────────────────────────────────────────────
+ws.onopen = () => {
+  document.getElementById('conn-dot').classList.add('ws');
+  document.getElementById('conn-text').textContent = 'WebSocket kết nối';
+  fetchStats();
+};
+ws.onclose = () => {
+  document.getElementById('conn-dot').classList.remove('ws','live');
+  document.getElementById('conn-text').textContent = 'Mất kết nối';
+  setTimeout(() => location.reload(), 3000);
+};
+ws.onmessage = (e) => {
+  const d = JSON.parse(e.data);
+  if (d.type === 'init') return;
+  updateCurrentDisplay(d);
+  addHistory(d);
+  fetchStats();
+};
+
+// ── Fetch stats định kỳ ────────────────────────────────────────────────────
+function fetchStats() {
+  fetch('/api/stats').then(r => r.json()).then(d => {
+    document.getElementById('s-comments').textContent = d.total_comments;
+    document.getElementById('s-gifts').textContent    = d.total_gifts;
+    document.getElementById('s-joins').textContent    = d.total_joins;
+    document.getElementById('s-queue').textContent    = d.queue_size;
+    document.getElementById('s-ws').textContent       = d.ws_clients;
+    document.getElementById('queue-count').textContent = d.queue_size;
+    if (d.queue_size > 0) {
+      document.getElementById('queue-count').className = 'badge badge-yellow';
+    } else {
+      document.getElementById('queue-count').className = 'badge badge-purple';
+    }
+  }).catch(() => {});
+}
+setInterval(fetchStats, 3000);
+
+// ── Cập nhật display hiện tại ──────────────────────────────────────────────
+const AVA_MAP   = {comment:'🔮',gift:'🎁',join:'👋',idle:'✨'};
+const BADGE_MAP = {comment:'Đang Bói',gift:'Tặng Quà',join:'Vào Live',idle:'Idle'};
+const BADGE_CLS = {comment:'badge-purple',gift:'badge-yellow',join:'badge-green',idle:'badge-purple'};
+
+function updateCurrentDisplay(d) {
+  document.getElementById('cur-ava').textContent   = AVA_MAP[d.type] || '🔮';
+  document.getElementById('cur-user').textContent  = d.username ? `@${d.username}` : 'Đang chờ...';
+  document.getElementById('cur-mole').textContent  = d.mole_number ? `✦ Nốt ruồi số ${d.mole_number}` : '';
+  document.getElementById('cur-pred').textContent  = d.prediction || '';
+  const badge = document.getElementById('cur-badge');
+  badge.textContent = BADGE_MAP[d.type] || 'Idle';
+  badge.className   = `badge ${BADGE_CLS[d.type] || 'badge-purple'}`;
+}
+
+// ── Lịch sử ────────────────────────────────────────────────────────────────
+function addHistory(d) {
+  history.unshift({...d, time: new Date()});
+  if (history.length > MAX_HIST) history.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!history.length) { el.innerHTML = '<div class="empty-state">Chưa có sự kiện nào</div>'; return; }
+  el.innerHTML = history.map(h => `
+    <div class="hist-item ${h.type}">
+      <div class="hist-meta">
+        <span class="hist-user">${h.username ? '@'+h.username : '—'}</span>
+        ${h.mole_number ? `<span class="badge badge-yellow">Số ${h.mole_number}</span>` : ''}
+        ${h.gift_name   ? `<span class="badge badge-yellow">🎁 ${h.gift_name}</span>` : ''}
+        <span class="hist-time">${h.time.toLocaleTimeString('vi-VN')}</span>
+      </div>
+      <div class="hist-text">${h.prediction || ''}</div>
+    </div>
+  `).join('');
+}
+
+// ── Quick number buttons ───────────────────────────────────────────────────
+const qnWrap = document.getElementById('quick-nums');
+for (let i = 1; i <= 78; i++) {
+  const btn = document.createElement('div');
+  btn.className = 'qn'; btn.textContent = i;
+  btn.onclick = () => {
+    document.getElementById('test-num').value = i;
+    document.querySelectorAll('.qn').forEach(b => b.style.background = '');
+    btn.style.background = '#7c3aed'; btn.style.color = '#fff';
+  };
+  qnWrap.appendChild(btn);
+}
+
+// ── Test functions ─────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+async function testBoi() {
+  const name = document.getElementById('test-name').value.trim() || 'TestUser';
+  const num  = parseInt(document.getElementById('test-num').value) || 1;
+  const r = await fetch('/api/test', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({type:'comment', username:name, mole_number:num})
+  });
+  if (r.ok) toast(`✅ Đã thêm bói số ${num} cho @${name}`);
+  else toast('❌ Lỗi — server chưa hỗ trợ test API');
+}
+
+async function testJoin() {
+  const name = document.getElementById('test-name').value.trim() || 'TestUser';
+  const r = await fetch('/api/test', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({type:'join', username:name})
+  });
+  if (r.ok) toast(`✅ Test join: @${name}`);
+  else toast('❌ Lỗi');
+}
+
+async function testGift(big) {
+  const name = document.getElementById('test-name').value.trim() || 'TestUser';
+  const r = await fetch('/api/test', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({type:'gift', username:name, gift_name: big ? 'Lion 🦁' : 'Rose 🌹', is_big_gift: big})
+  });
+  if (r.ok) toast(`✅ Test gift ${big ? 'lớn' : 'thường'}: @${name}`);
+  else toast('❌ Lỗi');
+}
+
+async function testIdle() {
+  const r = await fetch('/api/test', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({type:'idle'})
+  });
+  if (r.ok) toast('✅ Test idle phrase');
+  else toast('❌ Lỗi');
+}
+</script>
+</body>
+</html>

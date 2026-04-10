@@ -172,6 +172,45 @@ async def root():
         return HTMLResponse(f.read())
 
 
+@app.get("/admin")
+async def admin():
+    """Trang admin control panel."""
+    with open("static/admin.html", "r", encoding="utf-8") as f:
+        return HTMLResponse(f.read())
+
+
+@app.post("/api/test")
+async def test_event(payload: dict):
+    """API test thủ công — thêm sự kiện vào queue từ admin panel."""
+    from ai_response import get_mole_prediction, get_welcome_message, get_gift_message, get_idle_phrase
+    t = payload.get("type", "idle")
+    username   = payload.get("username", "TestUser")
+    mole_num   = payload.get("mole_number")
+    gift_name  = payload.get("gift_name", "quà")
+    is_big     = payload.get("is_big_gift", False)
+
+    if t == "comment" and mole_num:
+        text = get_mole_prediction(username, int(mole_num))
+    elif t == "join":
+        text = get_welcome_message(username)
+    elif t == "gift":
+        text = get_gift_message(username, gift_name, is_big=is_big)
+    else:
+        text = get_idle_phrase()
+
+    await event_queue.put({
+        "type":        t,
+        "username":    username,
+        "text":        text,
+        "priority":    t == "gift",
+        "voice_key":   "nam_tram" if is_big else "nu_diu_dang",
+        "mole_number": mole_num,
+        "gift_name":   gift_name,
+        "is_big_gift": is_big,
+    })
+    return JSONResponse({"ok": True})
+
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
