@@ -168,6 +168,13 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def root():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/admin")
+
+
+@app.get("/overlay")
+async def overlay():
+    """OBS Browser Source overlay."""
     with open("static/index.html", "r", encoding="utf-8") as f:
         return HTMLResponse(f.read())
 
