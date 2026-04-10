@@ -154,7 +154,17 @@ hr{border:none;border-top:1px solid var(--border);margin:16px 0}
           <input type="number" id="test-num" placeholder="1–78" min="1" max="78" value="1"/>
         </div>
       </div>
-      <div class="quick-nums" id="quick-nums"></div>
+      <div class="quick-nums" id="quick-nums">
+      <!-- Render sẵn 78 nút, không cần JS -->
+      <div class="qn" onclick="setNum(1)">1</div><div class="qn" onclick="setNum(2)">2</div><div class="qn" onclick="setNum(3)">3</div><div class="qn" onclick="setNum(4)">4</div><div class="qn" onclick="setNum(5)">5</div><div class="qn" onclick="setNum(6)">6</div><div class="qn" onclick="setNum(7)">7</div><div class="qn" onclick="setNum(8)">8</div><div class="qn" onclick="setNum(9)">9</div><div class="qn" onclick="setNum(10)">10</div>
+      <div class="qn" onclick="setNum(11)">11</div><div class="qn" onclick="setNum(12)">12</div><div class="qn" onclick="setNum(13)">13</div><div class="qn" onclick="setNum(14)">14</div><div class="qn" onclick="setNum(15)">15</div><div class="qn" onclick="setNum(16)">16</div><div class="qn" onclick="setNum(17)">17</div><div class="qn" onclick="setNum(18)">18</div><div class="qn" onclick="setNum(19)">19</div><div class="qn" onclick="setNum(20)">20</div>
+      <div class="qn" onclick="setNum(21)">21</div><div class="qn" onclick="setNum(22)">22</div><div class="qn" onclick="setNum(23)">23</div><div class="qn" onclick="setNum(24)">24</div><div class="qn" onclick="setNum(25)">25</div><div class="qn" onclick="setNum(26)">26</div><div class="qn" onclick="setNum(27)">27</div><div class="qn" onclick="setNum(28)">28</div><div class="qn" onclick="setNum(29)">29</div><div class="qn" onclick="setNum(30)">30</div>
+      <div class="qn" onclick="setNum(31)">31</div><div class="qn" onclick="setNum(32)">32</div><div class="qn" onclick="setNum(33)">33</div><div class="qn" onclick="setNum(34)">34</div><div class="qn" onclick="setNum(35)">35</div><div class="qn" onclick="setNum(36)">36</div><div class="qn" onclick="setNum(37)">37</div><div class="qn" onclick="setNum(38)">38</div><div class="qn" onclick="setNum(39)">39</div><div class="qn" onclick="setNum(40)">40</div>
+      <div class="qn" onclick="setNum(41)">41</div><div class="qn" onclick="setNum(42)">42</div><div class="qn" onclick="setNum(43)">43</div><div class="qn" onclick="setNum(44)">44</div><div class="qn" onclick="setNum(45)">45</div><div class="qn" onclick="setNum(46)">46</div><div class="qn" onclick="setNum(47)">47</div><div class="qn" onclick="setNum(48)">48</div><div class="qn" onclick="setNum(49)">49</div><div class="qn" onclick="setNum(50)">50</div>
+      <div class="qn" onclick="setNum(51)">51</div><div class="qn" onclick="setNum(52)">52</div><div class="qn" onclick="setNum(53)">53</div><div class="qn" onclick="setNum(54)">54</div><div class="qn" onclick="setNum(55)">55</div><div class="qn" onclick="setNum(56)">56</div><div class="qn" onclick="setNum(57)">57</div><div class="qn" onclick="setNum(58)">58</div><div class="qn" onclick="setNum(59)">59</div><div class="qn" onclick="setNum(60)">60</div>
+      <div class="qn" onclick="setNum(61)">61</div><div class="qn" onclick="setNum(62)">62</div><div class="qn" onclick="setNum(63)">63</div><div class="qn" onclick="setNum(64)">64</div><div class="qn" onclick="setNum(65)">65</div><div class="qn" onclick="setNum(66)">66</div><div class="qn" onclick="setNum(67)">67</div><div class="qn" onclick="setNum(68)">68</div><div class="qn" onclick="setNum(69)">69</div><div class="qn" onclick="setNum(70)">70</div>
+      <div class="qn" onclick="setNum(71)">71</div><div class="qn" onclick="setNum(72)">72</div><div class="qn" onclick="setNum(73)">73</div><div class="qn" onclick="setNum(74)">74</div><div class="qn" onclick="setNum(75)">75</div><div class="qn" onclick="setNum(76)">76</div><div class="qn" onclick="setNum(77)">77</div><div class="qn" onclick="setNum(78)">78</div>
+    </div>
       <hr/>
       <button class="btn btn-primary" onclick="testBoi()">🔮 Bói ngay</button>
     </div>
@@ -308,6 +318,13 @@ function renderHistory() {
       <div class="hist-text">${h.prediction || ''}</div>
     </div>
   `).join('');
+}
+
+function setNum(n) {
+  document.getElementById('test-num').value = n;
+  document.querySelectorAll('.qn').forEach(b => { b.style.background=''; b.style.color=''; });
+  event.target.style.background = '#7c3aed';
+  event.target.style.color = '#fff';
 }
 
 // ── Quick number buttons ───────────────────────────────────────────────────
