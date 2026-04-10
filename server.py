@@ -231,7 +231,31 @@ async def websocket_endpoint(websocket: WebSocket):
         print(f"[WebSocket] Client ngắt kết nối. Tổng: {len(websocket_clients)}")
 
 
-@app.get("/api/stats")
+@app.get("/api/queue")
+async def get_queue():
+    """Trả về danh sách items trong queue (chỉ đọc, không xóa)."""
+    items = []
+    # Lấy snapshot từ tất cả các sub-queue theo thứ tự ưu tiên
+    for p in sorted(event_queue._queues):
+        q = event_queue._queues[p]
+        # Lấy items mà không xóa khỏi queue
+        temp = []
+        while not q.empty():
+            try:
+                item = q.get_nowait()
+                temp.append(item)
+            except Exception:
+                break
+        # Đưa lại vào queue
+        for item in temp:
+            await q.put(item)
+        items.extend(temp)
+    return JSONResponse([{
+        "type":        i.get("type"),
+        "username":    i.get("username", ""),
+        "mole_number": i.get("mole_number"),
+        "gift_name":   i.get("gift_name", ""),
+    } for i in items[:50]])
 async def get_stats():
     return JSONResponse({**stats, "queue_size": event_queue.qsize(), "ws_clients": len(websocket_clients)})
 

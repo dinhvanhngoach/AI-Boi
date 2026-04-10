@@ -232,23 +232,45 @@ ws.onmessage = (e) => {
   fetchStats();
 };
 
-// ── Fetch stats định kỳ ────────────────────────────────────────────────────
+// ── Fetch stats + queue định kỳ ───────────────────────────────────────────
 function fetchStats() {
   fetch('/api/stats').then(r => r.json()).then(d => {
-    document.getElementById('s-comments').textContent = d.total_comments;
-    document.getElementById('s-gifts').textContent    = d.total_gifts;
-    document.getElementById('s-joins').textContent    = d.total_joins;
-    document.getElementById('s-queue').textContent    = d.queue_size;
-    document.getElementById('s-ws').textContent       = d.ws_clients;
+    document.getElementById('s-comments').textContent  = d.total_comments;
+    document.getElementById('s-gifts').textContent     = d.total_gifts;
+    document.getElementById('s-joins').textContent     = d.total_joins;
+    document.getElementById('s-queue').textContent     = d.queue_size;
+    document.getElementById('s-ws').textContent        = d.ws_clients;
     document.getElementById('queue-count').textContent = d.queue_size;
-    if (d.queue_size > 0) {
-      document.getElementById('queue-count').className = 'badge badge-yellow';
-    } else {
-      document.getElementById('queue-count').className = 'badge badge-purple';
-    }
+    document.getElementById('queue-count').className   = d.queue_size > 0 ? 'badge badge-yellow' : 'badge badge-purple';
   }).catch(() => {});
 }
-setInterval(fetchStats, 3000);
+
+function fetchQueue() {
+  fetch('/api/queue').then(r => r.json()).then(items => {
+    const el = document.getElementById('queue-list');
+    if (!items.length) {
+      el.innerHTML = '<div class="empty-state">Hàng đợi trống</div>';
+      return;
+    }
+    const TYPE_ICON = {comment:'🔮', gift:'🎁', join:'👋', idle:'✨'};
+    const TYPE_CLS  = {comment:'badge-purple', gift:'badge-yellow', join:'badge-green', idle:'badge-purple'};
+    el.innerHTML = items.map((item, idx) => `
+      <div class="queue-item">
+        <div class="qi-num">${idx + 1}</div>
+        <div>
+          <div class="qi-name">${item.username ? '@' + item.username : '—'}</div>
+          ${item.mole_number ? `<div style="font-size:11px;color:var(--gold)">Nốt ruồi số ${item.mole_number}</div>` : ''}
+          ${item.gift_name   ? `<div style="font-size:11px;color:var(--gold)">${item.gift_name}</div>` : ''}
+        </div>
+        <div class="qi-type">
+          <span class="badge ${TYPE_CLS[item.type] || 'badge-purple'}">${TYPE_ICON[item.type] || '?'} ${item.type}</span>
+        </div>
+      </div>
+    `).join('');
+  }).catch(() => {});
+}
+
+setInterval(() => { fetchStats(); fetchQueue(); }, 2000);
 
 // ── Cập nhật display hiện tại ──────────────────────────────────────────────
 const AVA_MAP   = {comment:'🔮',gift:'🎁',join:'👋',idle:'✨'};
