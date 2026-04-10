@@ -267,6 +267,11 @@ async def get_stats():
     return JSONResponse({**stats, "queue_size": event_queue.qsize(), "ws_clients": len(websocket_clients)})
 
 
+@app.get("/api/stats")
+async def get_stats():
+    return JSONResponse({**stats, "queue_size": event_queue.qsize(), "ws_clients": len(websocket_clients)})
+
+
 @app.get("/api/status")
 async def get_status():
     return JSONResponse(current_display)
