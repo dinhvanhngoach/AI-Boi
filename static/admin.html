@@ -219,7 +219,8 @@ hr{border:none;border-top:1px solid var(--border);margin:16px 0}
 <div id="toast"></div>
 
 <script>
-const ws = new WebSocket(`ws://${location.host}/ws`);
+const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+const ws = new WebSocket(`${wsProtocol}//${location.host}/ws`);
 const history = [];
 const MAX_HIST = 50;
 
